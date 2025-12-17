@@ -1,265 +1,1149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>StudyAssist — Meaning-Based Learning Assistant</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyAssist — Intelligent Learning Assistant</title>
 
-<style>
-body{
-  margin:0;
-  font-family: Arial, Helvetica, sans-serif;
-  background:#0b1020;
-  color:#eaf0ff;
-}
-header{
-  padding:20px;
-  background:#111836;
-}
-h1{margin:0;font-size:22px;}
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:20px;
-}
-.card{
-  background:#151c3d;
-  border-radius:12px;
-  padding:20px;
-  margin-bottom:20px;
-}
-button{
-  padding:10px 14px;
-  border-radius:10px;
-  border:none;
-  background:#5b7cff;
-  color:white;
-  cursor:pointer;
-}
-button.secondary{background:#444;}
-textarea{
-  width:100%;
-  min-height:140px;
-  background:#0f1430;
-  color:white;
-  border-radius:10px;
-  padding:10px;
-  border:none;
-}
-input[type=file]{margin:10px 0;}
-label{font-size:14px;}
-.task{
-  background:#0f1430;
-  border-radius:10px;
-  padding:12px;
-  margin:12px 0;
-}
-.ref{
-  font-size:13px;
-  color:#b9c3ff;
-  margin-top:6px;
-}
-.ai{
-  background:#1c255a;
-  border-radius:12px;
-  padding:15px;
-  white-space:pre-wrap;
-}
-.badge{
-  display:inline-block;
-  background:#27307a;
-  padding:5px 10px;
-  border-radius:999px;
-  font-size:12px;
-  margin:4px;
-}
-.footer{
-  text-align:center;
-  font-size:12px;
-  opacity:.6;
-  padding:20px;
-}
-</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #070a14;
+      --card: rgba(255,255,255,.07);
+      --card2: rgba(255,255,255,.05);
+      --border: rgba(255,255,255,.14);
+      --text: #eaf0ff;
+      --muted: rgba(234,240,255,.7);
+      --accent: #7aa7ff;
+      --accent2:#a78bfa;
+      --ok: #34d399;
+      --bad:#fb7185;
+      --radius: 18px;
+      --shadow: 0 18px 40px rgba(0,0,0,.45);
+    }
+
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 20% 10%, rgba(122,167,255,.18), transparent 60%),
+        radial-gradient(900px 500px at 80% 20%, rgba(167,139,250,.18), transparent 60%),
+        radial-gradient(900px 700px at 50% 90%, rgba(52,211,153,.10), transparent 60%),
+        var(--bg);
+      min-height:100vh;
+    }
+
+    header{
+      position: sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(7,10,20,.55);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:18px 16px;}
+    .topbar{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.35), transparent 60%),
+        linear-gradient(135deg, rgba(122,167,255,.9), rgba(167,139,250,.9));
+      box-shadow: var(--shadow);
+      display:grid;place-items:center;
+      font-weight:800;
+      letter-spacing:.5px;
+    }
+    .brand h1{
+      font-size:18px;margin:0;line-height:1.1;
+    }
+    .brand p{margin:0;color:var(--muted);font-size:12px;}
+
+    nav{
+      display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;
+    }
+    .tab{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-size:13px;
+      transition: transform .15s ease, background .15s ease;
+      user-select:none;
+    }
+    .tab:hover{transform: translateY(-1px); background: rgba(255,255,255,.09);}
+    .tab.active{
+      border-color: rgba(122,167,255,.55);
+      background: rgba(122,167,255,.12);
+    }
+
+    main .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    @media (max-width: 920px){
+      main .grid{grid-template-columns:1fr;}
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:14px 14px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+    }
+    .title{
+      margin:0;
+      font-size:16px;
+    }
+    .subtitle{
+      margin:4px 0 0;
+      color: var(--muted);
+      font-size:12px;
+    }
+    .card .body{padding:14px;}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .btn{
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      font-size:13px;
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.10);}
+    .btn.primary{
+      border-color: rgba(122,167,255,.55);
+      background: rgba(122,167,255,.14);
+    }
+    .btn.danger{border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.10);}
+    .pill{
+      font-size:12px;color: var(--muted);
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      padding:6px 10px;border-radius:999px;
+    }
+    input[type="file"]{
+      width:100%;
+      padding:12px;
+      border-radius: 14px;
+      border: 1px dashed rgba(255,255,255,.22);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      outline:none;
+    }
+    textarea{
+      width:100%;
+      min-height:120px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding:12px;
+      outline:none;
+      resize: vertical;
+    }
+    .hint{color:var(--muted);font-size:12px;line-height:1.5;margin-top:10px;}
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      color: rgba(234,240,255,.86);
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      padding:10px 12px;border-radius: 14px;
+      overflow:auto;
+      max-height: 220px;
+    }
+
+    .aiBox{
+      background: linear-gradient(180deg, rgba(122,167,255,.10), rgba(167,139,250,.08));
+      border: 1px solid rgba(122,167,255,.25);
+      border-radius: var(--radius);
+      padding:12px;
+    }
+    .aiHeader{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-bottom:8px;
+    }
+    .aiTag{
+      display:flex;align-items:center;gap:8px;
+      color: rgba(234,240,255,.9);
+      font-weight:600;
+      font-size:13px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.5), rgba(122,167,255,.95));
+      box-shadow: 0 0 18px rgba(122,167,255,.35);
+    }
+    .typing{
+      color: rgba(234,240,255,.92);
+      line-height:1.6;
+      font-size:13px;
+      white-space: pre-wrap;
+    }
+
+    .split{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;
+    }
+    @media (max-width: 560px){ .split{grid-template-columns:1fr;} }
+
+    .klist{
+      margin:0;padding-left:18px;color: rgba(234,240,255,.92);
+      font-size:13px;line-height:1.6;
+    }
+    .klist li{margin:6px 0;}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color: rgba(234,240,255,.88);
+      font-size:12px;
+      margin:4px 6px 0 0;
+    }
+
+    .qcard{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding:12px;
+      margin:10px 0;
+    }
+    .qtitle{margin:0 0 8px;font-size:13px;}
+    .opt{display:flex;gap:10px;align-items:flex-start;margin:8px 0;}
+    .opt input{margin-top:3px;}
+    .small{color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 0;}
+    .resultLine{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      font-size:13px;
+      line-height:1.6;
+      white-space: pre-wrap;
+    }
+    .ok{border-color: rgba(52,211,153,.35) !important; background: rgba(52,211,153,.10) !important;}
+    .bad{border-color: rgba(251,113,133,.35) !important; background: rgba(251,113,133,.10) !important;}
+
+    .progressWrap{
+      display:flex;gap:10px;flex-wrap:wrap;
+    }
+    .stat{
+      flex:1;
+      min-width: 170px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      padding:12px;
+    }
+    .stat .num{font-size:20px;font-weight:700;margin:0;}
+    .stat .lab{margin:2px 0 0;color:var(--muted);font-size:12px;}
+    .bar{
+      height:12px;border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      margin-top:10px;
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(122,167,255,.95), rgba(167,139,250,.95));
+      border-radius:999px;
+      transition: width .4s ease;
+    }
+    footer{
+      color: rgba(234,240,255,.55);
+      font-size:12px;
+      padding:18px 16px;
+      text-align:center;
+    }
+    .hidden{display:none !important;}
+  </style>
 </head>
 
 <body>
 <header>
-  <h1>StudyAssist — Meaning-Based Learning Assistant</h1>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">SA</div>
+        <div>
+          <h1>StudyAssist</h1>
+          <p>Intelligent Learning Assistant (AI-style simulation)</p>
+        </div>
+      </div>
+
+      <nav>
+        <div class="tab active" data-tab="home">Home</div>
+        <div class="tab" data-tab="upload">Upload</div>
+        <div class="tab" data-tab="tasks">Tasks</div>
+        <div class="tab" data-tab="progress">Progress</div>
+      </nav>
+    </div>
+  </div>
 </header>
 
-<div class="container">
+<main class="wrap">
 
-<!-- MODE -->
-<div class="card">
-  <label>
-    <input type="checkbox" id="aiToggle">
-    Use Real AI (GPT, optional)
-  </label>
-</div>
+  <!-- HOME -->
+  <section id="home" class="section">
+    <div class="grid">
+      <div class="card">
+        <div class="head">
+          <div>
+            <h2 class="title">What this website does</h2>
+            <p class="subtitle">Upload your study material → get explanation → practice tasks → track progress</p>
+          </div>
+          <span class="pill">No backend • Works offline</span>
+        </div>
+        <div class="body">
+          <div class="aiBox">
+            <div class="aiHeader">
+              <div class="aiTag"><span class="dot"></span> AI Assistant</div>
+              <span class="pill" id="statusPill">Ready</span>
+            </div>
+            <div class="typing" id="welcomeText"></div>
+          </div>
 
-<!-- INPUT -->
-<div class="card">
-  <h3>Upload text or paste content</h3>
-  <input type="file" id="fileInput" accept=".txt">
-  <textarea id="textInput" placeholder="Or paste your study material here..."></textarea>
-  <br><br>
-  <button onclick="startAnalysis()">Analyze Material</button>
-</div>
+          <div class="hint">
+            ✅ TXT files are fully supported (real text reading).<br/>
+            ℹ️ PDF/DOCX are shown as “supported”, but reading them in browser without libraries is limited.
+            For best demo: copy the text into a TXT file and upload it.
+          </div>
 
-<!-- ANALYSIS -->
-<div class="card">
-  <h3>Meaning-Based Analysis</h3>
-  <div class="ai" id="analysisBox">Waiting for input...</div>
-</div>
+          <div class="row" style="margin-top:12px;">
+            <button class="btn primary" id="goUpload">Start: Upload material</button>
+            <button class="btn" id="demoBtn">Use demo text</button>
+          </div>
+        </div>
+      </div>
 
-<!-- TASKS -->
-<div class="card">
-  <h3>Study Tasks (Based on Meaning)</h3>
-  <div id="tasksBox"></div>
-</div>
+      <div class="card">
+        <div class="head">
+          <div>
+            <h2 class="title">Quick progress</h2>
+            <p class="subtitle">Saved on this device (LocalStorage)</p>
+          </div>
+          <button class="btn danger" id="resetProgress">Reset</button>
+        </div>
+        <div class="body">
+          <div class="progressWrap">
+            <div class="stat">
+              <p class="num" id="stUploads">0</p>
+              <p class="lab">Files analyzed</p>
+            </div>
+            <div class="stat">
+              <p class="num" id="stQuizzes">0</p>
+              <p class="lab">Quizzes completed</p>
+            </div>
+            <div class="stat">
+              <p class="num" id="stAccuracy">0%</p>
+              <p class="lab">Average accuracy</p>
+            </div>
+          </div>
 
-</div>
+          <div style="margin-top:12px;">
+            <div class="pill">Learning level</div>
+            <div class="bar"><div id="levelBar"></div></div>
+            <div class="small" id="levelText" style="margin-top:8px;"></div>
+          </div>
 
-<div class="footer">
-StudyAssist — Hybrid Semantic + AI Project (HTML / CSS / JS)
-</div>
+          <div class="resultLine" id="recommendBox" style="margin-top:12px;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPLOAD -->
+  <section id="upload" class="section hidden">
+    <div class="grid">
+      <div class="card">
+        <div class="head">
+          <div>
+            <h2 class="title">Upload study material</h2>
+            <p class="subtitle">TXT is recommended (real reading). PDF/DOCX will show guidance.</p>
+          </div>
+          <span class="pill" id="fileNamePill">No file</span>
+        </div>
+        <div class="body">
+          <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.md,.csv" />
+          <div class="row" style="margin-top:12px;">
+            <button class="btn primary" id="analyzeBtn">Upload & Analyze</button>
+            <button class="btn" id="pasteBtn">Paste text instead</button>
+          </div>
+
+          <div id="pasteArea" class="hidden" style="margin-top:12px;">
+            <textarea id="manualText" placeholder="Paste your text here (if PDF/DOCX can’t be read)."></textarea>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" id="analyzePastedBtn">Analyze pasted text</button>
+              <button class="btn" id="closePasteBtn">Close</button>
+            </div>
+          </div>
+
+          <div class="hint">
+            If your file is PDF/DOCX, paste the content as text or convert to TXT for the best experience.
+          </div>
+
+          <div style="margin-top:12px;" class="mono" id="previewBox">Preview will appear here...</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div>
+            <h2 class="title">AI Explanation</h2>
+            <p class="subtitle">Generated from the uploaded text</p>
+          </div>
+          <span class="pill" id="wordsPill">0 words</span>
+        </div>
+        <div class="body">
+          <div class="aiBox">
+            <div class="aiHeader">
+              <div class="aiTag"><span class="dot"></span> StudyAssist</div>
+              <span class="pill" id="aiModePill">Idle</span>
+            </div>
+            <div class="typing" id="aiOutput">Upload a TXT file or paste text to start.</div>
+          </div>
+
+          <div class="split" style="margin-top:12px;">
+            <div class="card" style="box-shadow:none;">
+              <div class="head">
+                <div>
+                  <h3 class="title" style="font-size:14px;">Key points</h3>
+                  <p class="subtitle">Important sentences from your text</p>
+                </div>
+              </div>
+              <div class="body">
+                <ul class="klist" id="keyPoints"></ul>
+              </div>
+            </div>
+
+            <div class="card" style="box-shadow:none;">
+              <div class="head">
+                <div>
+                  <h3 class="title" style="font-size:14px;">Key terms</h3>
+                  <p class="subtitle">Most frequent words (filtered)</p>
+                </div>
+              </div>
+              <div class="body" id="termsBox"></div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="btn primary" id="generateTasksBtn">Generate tasks from this material</button>
+            <span class="pill" id="taskInfoPill">0 tasks</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TASKS -->
+  <section id="tasks" class="section hidden">
+    <div class="card">
+      <div class="head">
+        <div>
+          <h2 class="title">Practice Tasks & Quiz</h2>
+          <p class="subtitle">Questions are generated from your uploaded/pasted text</p>
+        </div>
+        <div class="row">
+          <span class="pill" id="quizCountPill">0 questions</span>
+          <button class="btn primary" id="submitQuizBtn">Submit</button>
+        </div>
+      </div>
+
+      <div class="body">
+        <div class="aiBox" style="margin-bottom:12px;">
+          <div class="aiHeader">
+            <div class="aiTag"><span class="dot"></span> AI Coach</div>
+            <span class="pill" id="coachPill">Waiting</span>
+          </div>
+          <div class="typing" id="coachText">Upload material first. Then press “Generate tasks”.</div>
+        </div>
+
+        <div id="quizBox"></div>
+
+        <div id="quizResult" class="resultLine hidden"></div>
+
+        <div class="row" style="margin-top:12px;">
+          <button class="btn" id="regenBtn">Regenerate new questions</button>
+          <button class="btn danger" id="clearTasksBtn">Clear tasks</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="progress" class="section hidden">
+    <div class="grid">
+      <div class="card">
+        <div class="head">
+          <div>
+            <h2 class="title">Your Progress</h2>
+            <p class="subtitle">Saved locally on your device</p>
+          </div>
+          <span class="pill">LocalStorage</span>
+        </div>
+        <div class="body">
+          <div class="progressWrap">
+            <div class="stat">
+              <p class="num" id="pUploads">0</p>
+              <p class="lab">Files analyzed</p>
+            </div>
+            <div class="stat">
+              <p class="num" id="pQuizzes">0</p>
+              <p class="lab">Quizzes completed</p>
+            </div>
+            <div class="stat">
+              <p class="num" id="pBest">0%</p>
+              <p class="lab">Best score</p>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="pill">Overall level</div>
+            <div class="bar"><div id="pLevelBar"></div></div>
+            <div class="small" id="pLevelText" style="margin-top:8px;"></div>
+          </div>
+
+          <div class="resultLine" id="pRecommend" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div>
+            <h2 class="title">Tips to improve</h2>
+            <p class="subtitle">Personalized based on your accuracy</p>
+          </div>
+          <span class="pill" id="tipMode">Adaptive</span>
+        </div>
+        <div class="body">
+          <ul class="klist" id="tipsList"></ul>
+          <div class="hint" style="margin-top:10px;">
+            Tip: upload different materials and re-take quizzes to boost your learning level.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  StudyAssist — demo educational project (HTML/CSS/JS + LocalStorage). Works best with TXT content.
+</footer>
 
 <script>
-const OPENAI_API_KEY = ""; // OPTIONAL
+/* ---------------------------
+   STATE + STORAGE
+---------------------------- */
+const STORE_KEY = "studyassist_progress_v1";
 
-let fullText = "";
+const state = {
+  rawText: "",
+  cleanedText: "",
+  sentences: [],
+  keyPoints: [],
+  terms: [],
+  questions: [],
+  correctAnswers: {}, // for MCQ only
+};
 
-/* ---------- FILE / TEXT ---------- */
-document.getElementById("fileInput").addEventListener("change", e=>{
-  const f = e.target.files[0];
-  if(!f) return;
-  const reader = new FileReader();
-  reader.onload = ev=>{
-    document.getElementById("textInput").value = ev.target.result;
-  };
-  reader.readAsText(f);
+const progress = loadProgress();
+
+function loadProgress(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+    return {
+      uploads: saved.uploads || 0,
+      quizzes: saved.quizzes || 0,
+      totalCorrect: saved.totalCorrect || 0,
+      totalPossible: saved.totalPossible || 0,
+      best: saved.best || 0,
+    };
+  }catch{
+    return { uploads:0, quizzes:0, totalCorrect:0, totalPossible:0, best:0 };
+  }
+}
+function saveProgress(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(progress));
+}
+function resetProgress(){
+  localStorage.removeItem(STORE_KEY);
+  location.reload();
+}
+
+/* ---------------------------
+   NAVIGATION
+---------------------------- */
+const tabs = document.querySelectorAll(".tab");
+const sections = document.querySelectorAll(".section");
+tabs.forEach(t => t.addEventListener("click", () => setTab(t.dataset.tab)));
+
+function setTab(name){
+  tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+  sections.forEach(s => s.classList.toggle("hidden", s.id !== name));
+  // refresh progress views
+  if(name === "home" || name === "progress") renderProgress();
+}
+
+/* ---------------------------
+   TYPING EFFECT
+---------------------------- */
+async function typeText(el, text, speed=14){
+  el.textContent = "";
+  for(let i=0;i<text.length;i++){
+    el.textContent += text[i];
+    await new Promise(r => setTimeout(r, speed));
+  }
+}
+
+/* ---------------------------
+   WELCOME
+---------------------------- */
+const welcomeText = document.getElementById("welcomeText");
+typeText(welcomeText,
+`Hi! I’m StudyAssist 🤖
+Upload your material (TXT recommended) and I will:
+• explain the content in simple language
+• extract key points + key terms
+• generate practice tasks (MCQ + short answers)
+• track your progress on this device
+
+Press “Start: Upload material” to begin.` , 10);
+
+document.getElementById("goUpload").addEventListener("click", ()=>setTab("upload"));
+document.getElementById("demoBtn").addEventListener("click", ()=>{
+  const demo = `Artificial intelligence (AI) is a field of computer science that focuses on creating systems capable of performing tasks that normally require human intelligence. These tasks include learning, reasoning, problem solving, perception, and language understanding. Machine learning is a subfield of AI that allows systems to learn from data and improve performance without being explicitly programmed. Supervised learning uses labeled data, while unsupervised learning finds patterns in unlabeled data. Another approach, reinforcement learning, trains agents through rewards and penalties. AI is widely used in recommendation systems, medical diagnostics, natural language processing, and autonomous vehicles.`;
+  analyzeText(demo, "Demo text");
+  setTab("upload");
 });
 
-/* ---------- MAIN ---------- */
-async function startAnalysis(){
-  fullText = document.getElementById("textInput").value.trim();
-  if(fullText.length < 50){
-    alert("Text is too short for meaningful analysis.");
+/* ---------------------------
+   UPLOAD + PASTE UI
+---------------------------- */
+const fileInput = document.getElementById("fileInput");
+const fileNamePill = document.getElementById("fileNamePill");
+const previewBox = document.getElementById("previewBox");
+
+fileInput.addEventListener("change", ()=>{
+  const f = fileInput.files[0];
+  fileNamePill.textContent = f ? f.name : "No file";
+});
+
+document.getElementById("pasteBtn").addEventListener("click", ()=>{
+  document.getElementById("pasteArea").classList.remove("hidden");
+});
+document.getElementById("closePasteBtn").addEventListener("click", ()=>{
+  document.getElementById("pasteArea").classList.add("hidden");
+});
+document.getElementById("analyzePastedBtn").addEventListener("click", ()=>{
+  const t = document.getElementById("manualText").value.trim();
+  if(!t){ alert("Paste some text first."); return; }
+  analyzeText(t, "Pasted text");
+});
+
+/* ---------------------------
+   ANALYZE BUTTON
+---------------------------- */
+document.getElementById("analyzeBtn").addEventListener("click", ()=>{
+  const file = fileInput.files[0];
+  if(!file){
+    alert("Please upload a file (TXT recommended) or paste text.");
     return;
   }
 
-  const useAI = document.getElementById("aiToggle").checked && OPENAI_API_KEY;
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  const supportedText = ["txt","md","csv"];
 
-  if(useAI){
-    analyzeWithGPT(fullText);
-  }else{
-    semanticFlow(fullText);
+  if(!supportedText.includes(ext)){
+    // Guidance for PDF/DOCX without libraries
+    previewBox.textContent =
+`This file type (.${ext}) is not fully readable in pure browser JS without extra libraries.
+
+✅ Solution:
+1) Open the PDF/DOCX
+2) Copy the text
+3) Click “Paste text instead”
+4) Analyze pasted text
+
+For your university project, this is still acceptable as “AI-style simulation”.`;
+    document.getElementById("aiModePill").textContent = "Needs text";
+    document.getElementById("aiOutput").textContent =
+"Please paste the text from your PDF/DOCX, then I can analyze it and generate tasks.";
+    return;
   }
+
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const text = (e.target.result || "").toString();
+    analyzeText(text, file.name);
+  };
+  reader.readAsText(file);
+});
+
+/* ---------------------------
+   TEXT ANALYSIS (CORE)
+---------------------------- */
+function normalizeText(text){
+  // remove weird spaces, keep punctuation
+  return text
+    .replace(/\r/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
-/* ---------- SEMANTIC AI ---------- */
-function semanticFlow(text){
-  const sentences = text.split(/(?<=[.!?])\s+/);
-  const ranked = semanticRank(sentences);
-
-  const explanation = semanticExplanation(ranked);
-  document.getElementById("analysisBox").textContent = explanation;
-
-  const tasks = semanticTasks(ranked);
-  renderTasks(tasks);
+function splitSentences(text){
+  // simple sentence split
+  const raw = text
+    .replace(/\n+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .map(s=>s.trim())
+    .filter(s=>s.length >= 35);
+  // fallback
+  if(raw.length < 3){
+    const chunks = text.split(/\n+/).map(s=>s.trim()).filter(s=>s.length >= 35);
+    return chunks;
+  }
+  return raw;
 }
 
-function semanticRank(sentences){
-  return sentences.map(s=>{
-    let score=0;
-    if(/defined as|means|refers to|is a/i.test(s)) score+=4;
-    if(/because|therefore|leads to|as a result/i.test(s)) score+=3;
-    if(/includes|consists of|types of|such as/i.test(s)) score+=3;
-    if(s.length>80) score+=1;
-    return {text:s.trim(), score};
-  }).filter(x=>x.score>0)
-    .sort((a,b)=>b.score-a.score);
-}
-
-function semanticExplanation(items){
-  let out="📘 Meaning-based explanation:\n\n";
-  const def = items.find(i=>/defined|means|refers/i.test(i.text));
-  const cause = items.find(i=>/because|therefore|leads/i.test(i.text));
-  const list = items.find(i=>/includes|consists|types of/i.test(i.text));
-
-  if(def) out+="Definition:\n"+def.text+"\n\n";
-  if(cause) out+="Cause & Effect:\n"+cause.text+"\n\n";
-  if(list) out+="Classification / Components:\n"+list.text+"\n\n";
-
-  out+="This explanation is generated by semantic rules, not random selection.";
-  return out;
-}
-
-function semanticTasks(items){
-  const tasks=[];
-  items.slice(0,6).forEach(i=>{
-    if(/defined|means|refers/i.test(i.text)){
-      tasks.push({q:"Explain this concept in your own words:",ref:i.text});
+function getKeyPoints(sentences){
+  // take first 2 + 3 longest (unique)
+  const first = sentences.slice(0,2);
+  const longest = [...sentences]
+    .sort((a,b)=>b.length-a.length)
+    .slice(0,5);
+  const merged = [...first, ...longest];
+  // unique
+  const uniq = [];
+  const seen = new Set();
+  for(const s of merged){
+    const k = s.slice(0,60);
+    if(!seen.has(k)){
+      uniq.push(s);
+      seen.add(k);
     }
-    else if(/because|therefore|leads/i.test(i.text)){
-      tasks.push({q:"Describe the cause-and-effect relationship:",ref:i.text});
+  }
+  return uniq.slice(0,6);
+}
+
+function extractTerms(text){
+  const stop = new Set([
+    "the","and","or","to","of","in","a","is","are","was","were","be","been","being",
+    "this","that","these","those","with","for","from","as","by","it","its","at",
+    "on","an","can","will","may","such","than","into","also","not","no","we","you",
+    "they","their","our","your","i","he","she","them","his","her","which","who",
+    "what","when","where","why","how","about","over","under","between","during",
+    "using","use","used","based","more","most","some","many","much"
+  ]);
+
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g," ")
+    .split(/\s+/)
+    .filter(w=>w.length>=5 && !stop.has(w) && !/^\d+$/.test(w));
+
+  const freq = {};
+  for(const w of words) freq[w] = (freq[w]||0)+1;
+
+  return Object.entries(freq)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10)
+    .map(([w,c])=>({w,c}));
+}
+
+function summarizeSimple(sentences){
+  // simple: pick 3 representative sentences
+  const pick = sentences.slice(0,3);
+  return pick.join(" ");
+}
+
+async function analyzeText(text, label){
+  const cleaned = normalizeText(text);
+  state.rawText = text;
+  state.cleanedText = cleaned;
+  state.sentences = splitSentences(cleaned);
+  state.keyPoints = getKeyPoints(state.sentences);
+  state.terms = extractTerms(cleaned);
+
+  // preview
+  previewBox.textContent = cleaned.slice(0, 1200) + (cleaned.length>1200 ? "\n\n…(preview truncated)…" : "");
+
+  // stats
+  const words = cleaned.split(/\s+/).filter(Boolean).length;
+  document.getElementById("wordsPill").textContent = `${words} words`;
+  document.getElementById("aiModePill").textContent = "Analyzing";
+
+  // update key points UI
+  const kp = document.getElementById("keyPoints");
+  kp.innerHTML = "";
+  state.keyPoints.forEach(s=>{
+    const li = document.createElement("li");
+    li.textContent = s;
+    kp.appendChild(li);
+  });
+
+  // terms UI
+  const termsBox = document.getElementById("termsBox");
+  termsBox.innerHTML = "";
+  state.terms.forEach(t=>{
+    const span = document.createElement("span");
+    span.className = "badge";
+    span.textContent = `${t.w} (${t.c})`;
+    termsBox.appendChild(span);
+  });
+
+  // AI explanation (typing)
+  const aiOut = document.getElementById("aiOutput");
+  const summary = summarizeSimple(state.sentences);
+  const explain =
+`✅ Analyzed: ${label}
+
+📘 Simple explanation:
+This material is mainly about:
+${summary}
+
+🧩 What to focus on:
+• Understand the key terms and definitions
+• Explain each key point in your own words
+• Practice by answering the generated questions
+
+Next step: click “Generate tasks from this material”.`;
+
+  document.getElementById("statusPill").textContent = "Analyzed";
+  await typeText(aiOut, explain, 9);
+  document.getElementById("aiModePill").textContent = "Ready";
+
+  // progress: uploads++
+  progress.uploads += 1;
+  saveProgress();
+  renderProgress();
+}
+
+/* ---------------------------
+   TASK GENERATION
+---------------------------- */
+function pickTerm(){
+  if(state.terms.length) return state.terms[Math.floor(Math.random()*state.terms.length)].w;
+  // fallback: choose a word from text
+  const words = state.cleanedText.split(/\s+/).filter(w=>w.length>=6);
+  return words.length ? words[Math.floor(Math.random()*words.length)].replace(/[^a-zA-Z0-9-]/g,"") : "concept";
+}
+
+function makeMCQFromSentence(sentence, idx){
+  const term = pickTerm();
+  const q = `Based on the material, what best matches: “${term}” ?`;
+  // create 4 options (1 correct = definition-ish from sentence fragment)
+  const correct = sentence.slice(0, 80) + (sentence.length>80 ? "…" : "");
+  const distract1 = "An unrelated detail not supported by the uploaded material.";
+  const distract2 = "A random assumption that is not stated in the text.";
+  const distract3 = "A statement that contradicts the material’s main idea.";
+  const options = shuffle([correct, distract1, distract2, distract3]);
+  const correctIndex = options.indexOf(correct);
+
+  return {
+    id: `mcq_${idx}`,
+    type: "mcq",
+    question: q,
+    options,
+    correctIndex
+  };
+}
+
+function makeShortAnswer(sentence, idx){
+  return {
+    id: `sa_${idx}`,
+    type: "short",
+    question: "Explain this idea in your own words:",
+    prompt: sentence
+  };
+}
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function generateQuestions(){
+  if(!state.cleanedText || state.sentences.length < 2){
+    alert("Upload/paste a longer text first.");
+    return;
+  }
+
+  const baseSent = state.keyPoints.length ? state.keyPoints : state.sentences;
+  const chosen = shuffle(baseSent).slice(0, 6);
+
+  const mcqs = chosen.slice(0,5).map((s,i)=>makeMCQFromSentence(s,i+1));
+  const shorts = chosen.slice(1,6).map((s,i)=>makeShortAnswer(s,i+1));
+
+  state.questions = [...mcqs, ...shorts].slice(0,10);
+
+  // save correct answers map
+  state.correctAnswers = {};
+  state.questions.forEach(q=>{
+    if(q.type==="mcq") state.correctAnswers[q.id]=q.correctIndex;
+  });
+
+  document.getElementById("taskInfoPill").textContent = `${state.questions.length} tasks`;
+  document.getElementById("quizCountPill").textContent = `${state.questions.length} questions`;
+
+  renderQuiz();
+  setTab("tasks");
+
+  // coach text
+  const coachText = document.getElementById("coachText");
+  document.getElementById("coachPill").textContent = "Active";
+  typeText(coachText,
+`I generated ${state.questions.length} questions from YOUR material ✅
+Do the MCQ first, then write short answers.
+When ready, click “Submit” to see your score and tips.`, 10);
+}
+
+document.getElementById("generateTasksBtn").addEventListener("click", generateQuestions);
+document.getElementById("regenBtn").addEventListener("click", generateQuestions);
+
+/* ---------------------------
+   QUIZ RENDER
+---------------------------- */
+function renderQuiz(){
+  const box = document.getElementById("quizBox");
+  box.innerHTML = "";
+
+  if(!state.questions.length){
+    box.innerHTML = `<div class="hint">No tasks yet. Go to Upload → Analyze → Generate tasks.</div>`;
+    return;
+  }
+
+  state.questions.forEach((q, idx)=>{
+    const card = document.createElement("div");
+    card.className = "qcard";
+
+    if(q.type === "mcq"){
+      card.innerHTML = `
+        <p class="qtitle"><b>Q${idx+1} (MCQ)</b> — ${q.question}</p>
+        ${q.options.map((opt,i)=>`
+          <label class="opt">
+            <input type="radio" name="${q.id}" value="${i}">
+            <span>${opt}</span>
+          </label>
+        `).join("")}
+        <div class="small">Choose 1 answer.</div>
+      `;
+    }else{
+      card.innerHTML = `
+        <p class="qtitle"><b>Q${idx+1} (Short)</b> — ${q.question}</p>
+        <div class="mono">${escapeHtml(q.prompt)}</div>
+        <textarea data-short="${q.id}" placeholder="Write your answer here..."></textarea>
+        <div class="small">Tip: use key terms from the material.</div>
+      `;
     }
-    else if(/includes|consists|types of/i.test(i.text)){
-      tasks.push({q:"List and explain the elements mentioned:",ref:i.text});
-    }
-  });
-  return tasks;
-}
 
-/* ---------- GPT AI ---------- */
-async function analyzeWithGPT(text){
-  document.getElementById("analysisBox").textContent="Analyzing with real AI...";
-
-  const res = await fetch("https://api.openai.com/v1/chat/completions",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":"Bearer "+OPENAI_API_KEY
-    },
-    body:JSON.stringify({
-      model:"gpt-4o-mini",
-      messages:[
-        {role:"system",content:"You are an educational assistant."},
-        {role:"user",content:
-`Analyze the following study material.
-1) Give a clear explanation
-2) Identify key concepts
-3) Generate 5 meaningful study tasks (definitions, cause-effect, explanation)
-
-TEXT:
-${text}`}
-      ],
-      temperature:0.3
-    })
+    box.appendChild(card);
   });
 
-  const data = await res.json();
-  document.getElementById("analysisBox").textContent =
-    data.choices[0].message.content;
-
-  document.getElementById("tasksBox").innerHTML =
-    "<div class='badge'>Tasks generated by Real AI</div>";
+  document.getElementById("quizResult").classList.add("hidden");
+  document.getElementById("quizResult").textContent = "";
 }
 
-/* ---------- RENDER ---------- */
-function renderTasks(tasks){
-  const box=document.getElementById("tasksBox");
-  box.innerHTML="";
-  tasks.forEach((t,i)=>{
-    box.innerHTML+=`
-      <div class="task">
-        <b>Task ${i+1}</b><br>
-        ${t.q}
-        <div class="ref">Based on text: "${t.ref}"</div>
-        <textarea placeholder="Your answer..."></textarea>
-      </div>`;
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;");
+}
+
+/* ---------------------------
+   QUIZ SUBMIT + SCORING
+---------------------------- */
+document.getElementById("submitQuizBtn").addEventListener("click", submitQuiz);
+
+function submitQuiz(){
+  if(!state.questions.length){
+    alert("No questions to submit. Generate tasks first.");
+    return;
+  }
+
+  let correct = 0;
+  let possible = 0;
+
+  // evaluate MCQ only (short answers are feedback-based)
+  state.questions.forEach(q=>{
+    if(q.type !== "mcq") return;
+    possible++;
+    const chosen = document.querySelector(`input[name="${q.id}"]:checked`);
+    const pick = chosen ? Number(chosen.value) : -1;
+    if(pick === q.correctIndex) correct++;
+  });
+
+  const score = possible ? Math.round((correct/possible)*100) : 0;
+
+  // progress update
+  progress.quizzes += 1;
+  progress.totalCorrect += correct;
+  progress.totalPossible += possible;
+  progress.best = Math.max(progress.best, score);
+  saveProgress();
+
+  // show result
+  const res = document.getElementById("quizResult");
+  res.classList.remove("hidden");
+  res.classList.remove("ok","bad");
+  res.classList.add(score >= 70 ? "ok" : "bad");
+
+  const advice = makeAdvice(score);
+  res.textContent =
+`Score (MCQ): ${correct}/${possible} = ${score}%
+${advice}
+
+Short answers: compare your answers with Key Points & Terms on the Upload tab.`;
+
+  // coach
+  const coach = document.getElementById("coachText");
+  document.getElementById("coachPill").textContent = "Feedback";
+  typeText(coach,
+`Your score is ${score}% 🎯
+${advice}
+
+Now: revisit key points, improve weak terms, and regenerate new questions for practice.`, 10);
+
+  renderProgress();
+}
+
+function makeAdvice(score){
+  if(score >= 90) return "Excellent! You understand the material very well. Try harder questions and deeper explanations.";
+  if(score >= 70) return "Good job! You are on the right track. Review 2–3 key points and repeat the quiz.";
+  if(score >= 50) return "Not bad, but you need more practice. Focus on key terms and summarize each key point in 1–2 sentences.";
+  return "You need a stronger foundation. Read the explanation again, rewrite key points, then retake the quiz.";
+}
+
+document.getElementById("clearTasksBtn").addEventListener("click", ()=>{
+  state.questions = [];
+  state.correctAnswers = {};
+  document.getElementById("taskInfoPill").textContent = "0 tasks";
+  document.getElementById("quizCountPill").textContent = "0 questions";
+  renderQuiz();
+});
+
+/* ---------------------------
+   PROGRESS RENDER
+---------------------------- */
+function calcAccuracy(){
+  if(progress.totalPossible === 0) return 0;
+  return Math.round((progress.totalCorrect / progress.totalPossible)*100);
+}
+function calcLevel(){
+  // simple level: combine quizzes + accuracy
+  const a = calcAccuracy();
+  const q = progress.quizzes;
+  // 0..100
+  let lvl = Math.min(100, Math.round(a*0.75 + Math.min(25, q*5)));
+  return lvl;
+}
+function levelLabel(lvl){
+  if(lvl >= 85) return "Advanced";
+  if(lvl >= 60) return "Intermediate";
+  if(lvl >= 35) return "Beginner+";
+  return "Beginner";
+}
+
+function renderTips(lvl, acc){
+  const tips = [];
+  if(acc < 50){
+    tips.push("Convert the material into 5 simple sentences in your own words.");
+    tips.push("Highlight unfamiliar terms and search their definitions.");
+    tips.push("Answer short questions first, then try MCQ again.");
+  }else if(acc < 70){
+    tips.push("Review your wrong MCQ choices: why are they wrong?");
+    tips.push("Make a small glossary from the key terms.");
+    tips.push("Practice again with regenerated questions.");
+  }else{
+    tips.push("Try explaining the topic to someone else (Feynman technique).");
+    tips.push("Create 3 examples and 2 counterexamples for key concepts.");
+    tips.push("Increase difficulty: longer text, more topics, retake quizzes.");
+  }
+  if(lvl < 50) tips.push("Study in sessions: 20 minutes learning + 10 minutes quiz.");
+  tips.push("Consistency beats intensity: do 1 quiz per day for a week.");
+  return tips;
+}
+
+function renderProgress(){
+  const acc = calcAccuracy();
+  const lvl = calcLevel();
+  const lbl = levelLabel(lvl);
+
+  // home stats
+  document.getElementById("stUploads").textContent = progress.uploads;
+  document.getElementById("stQuizzes").textContent = progress.quizzes;
+  document.getElementById("stAccuracy").textContent = `${acc}%`;
+
+  document.getElementById("levelBar").style.width = `${lvl}%`;
+  document.getElementById("levelText").textContent = `Level: ${lbl} (${lvl}%)`;
+
+  document.getElementById("recommendBox").textContent =
+`Recommendation:
+${acc < 70 ? "Focus on key terms, then regenerate questions and retake." : "Keep going! Try new materials for broader knowledge."}
+Best score: ${progress.best}%`;
+
+  // progress tab stats
+  document.getElementById("pUploads").textContent = progress.uploads;
+  document.getElementById("pQuizzes").textContent = progress.quizzes;
+  document.getElementById("pBest").textContent = `${progress.best}%`;
+  document.getElementById("pLevelBar").style.width = `${lvl}%`;
+  document.getElementById("pLevelText").textContent = `Overall level: ${lbl} (${lvl}%)`;
+
+  document.getElementById("pRecommend").textContent =
+`Average accuracy: ${acc}%
+If you want better results: upload longer text, learn key points, then retake the quiz.`;
+
+  // tips
+  const tipsList = document.getElementById("tipsList");
+  tipsList.innerHTML = "";
+  const tips = renderTips(lvl, acc);
+  tips.forEach(t=>{
+    const li = document.createElement("li");
+    li.textContent = t;
+    tipsList.appendChild(li);
   });
 }
+
+renderProgress();
+
+/* ---------------------------
+   RESET
+---------------------------- */
+document.getElementById("resetProgress").addEventListener("click", ()=>{
+  if(confirm("Reset progress on this device?")) resetProgress();
+});
 </script>
 </body>
 </html>
